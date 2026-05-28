@@ -1,0 +1,88 @@
+// Prisma schema for Automative Hotel
+// Docs: https://pris.ly/d/prisma-schema
+//
+// Notes:
+// - SQLite (used for local dev) does not support native enums or array types,
+//   so `role`/`status` are stored as String and validated in application code,
+//   and `amenities` is stored as a JSON-encoded String (see lib/booking-utils).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("USER") // "USER" | "ADMIN"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings     Booking[]
+  reservations RestaurantReservation[]
+}
+
+model Room {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  pricePerNight Float
+  capacity      Int
+  amenities     String   @default("[]") // JSON-encoded string array
+  imageUrl      String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  userId          String?
+  roomId          String
+  guestName       String
+  guestEmail      String
+  guestPhone      String
+  checkIn         DateTime
+  checkOut        DateTime
+  guests          Int
+  totalPrice      Float
+  status          String   @default("PENDING") // "PENDING" | "CONFIRMED" | "CANCELLED"
+  specialRequests String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  room Room  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([userId])
+  @@index([checkIn, checkOut])
+}
+
+model RestaurantReservation {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  phone     String
+  date      DateTime
+  time      String
+  guests    Int
+  message   String?
+  status    String   @default("PENDING") // "PENDING" | "CONFIRMED" | "CANCELLED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+}
