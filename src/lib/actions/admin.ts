@@ -1,10 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { bookingStatusSchema, roomSchema } from "@/lib/validations";
 import { stringifyAmenities } from "@/lib/booking-utils";
+import {
+  CONVERSATION_STATUSES,
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+} from "@/lib/types";
 import {
   type ActionResult,
   actionError,
@@ -122,6 +128,58 @@ export async function updateRoomAction(input: unknown): Promise<ActionResult> {
   revalidatePath("/admin");
   revalidatePath("/rooms");
   revalidatePath(`/rooms/${parsed.data.slug}`);
+  return actionOk(undefined);
+}
+
+const ticketUpdateSchema = z.object({
+  ticketId: z.string().min(1),
+  status: z.enum(TICKET_STATUSES).optional(),
+  priority: z.enum(TICKET_PRIORITIES).optional(),
+});
+
+export async function updateTicketAction(input: unknown): Promise<ActionResult> {
+  const denied = await ensureAdmin();
+  if (denied) return denied;
+
+  const parsed = ticketUpdateSchema.safeParse(input);
+  if (!parsed.success) return actionError("Invalid request.");
+  if (!parsed.data.status && !parsed.data.priority) {
+    return actionError("Nothing to update.");
+  }
+
+  await prisma.supportTicket.update({
+    where: { id: parsed.data.ticketId },
+    data: {
+      ...(parsed.data.status ? { status: parsed.data.status } : {}),
+      ...(parsed.data.priority ? { priority: parsed.data.priority } : {}),
+    },
+  });
+
+  revalidatePath("/admin/tickets");
+  return actionOk(undefined);
+}
+
+const conversationUpdateSchema = z.object({
+  conversationId: z.string().min(1),
+  status: z.enum(CONVERSATION_STATUSES),
+});
+
+export async function updateConversationStatusAction(
+  input: unknown,
+): Promise<ActionResult> {
+  const denied = await ensureAdmin();
+  if (denied) return denied;
+
+  const parsed = conversationUpdateSchema.safeParse(input);
+  if (!parsed.success) return actionError("Invalid request.");
+
+  await prisma.aIConversation.update({
+    where: { id: parsed.data.conversationId },
+    data: { status: parsed.data.status },
+  });
+
+  revalidatePath("/admin/conversations");
+  revalidatePath(`/admin/conversations/${parsed.data.conversationId}`);
   return actionOk(undefined);
 }
 

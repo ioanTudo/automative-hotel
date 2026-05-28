@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { BookingStatusControl } from "@/components/admin/BookingStatusControl";
 import { RoomManager } from "@/components/admin/RoomManager";
+import { AdminSubnav } from "@/components/admin/AdminSubnav";
 import { requireAdmin } from "@/lib/auth";
 import {
   getAllBookings,
@@ -66,6 +67,8 @@ export default async function AdminPage({
         <p className="mt-1 text-stone-600">
           Manage bookings, rooms, restaurant reservations and users.
         </p>
+
+        <AdminSubnav active="dashboard" />
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (

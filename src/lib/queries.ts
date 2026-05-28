@@ -105,6 +105,37 @@ export async function getAllReservations() {
   });
 }
 
+// --- AI Front Desk admin reads ---
+
+export async function getAllTickets() {
+  return prisma.supportTicket.findMany({
+    orderBy: [{ createdAt: "desc" }],
+  });
+}
+
+export async function getAllConversations() {
+  return prisma.aIConversation.findMany({
+    orderBy: { updatedAt: "desc" },
+    include: {
+      _count: { select: { messages: true } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
+  });
+}
+
+export async function getConversationById(id: string) {
+  return prisma.aIConversation.findUnique({
+    where: { id },
+    include: { messages: { orderBy: { createdAt: "asc" } } },
+  });
+}
+
+export async function getAllKnowledgeBase() {
+  return prisma.knowledgeBaseItem.findMany({
+    orderBy: [{ category: "asc" }, { title: "asc" }],
+  });
+}
+
 /** Non-cancelled future bookings for a room — used for availability checks. */
 export async function getRoomBookedRanges(roomId: string) {
   const bookings = await prisma.booking.findMany({
