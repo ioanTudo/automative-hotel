@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { buttonClasses, cn } from "@/lib/ui";
 import { formatCurrency, formatDate } from "@/lib/booking-utils";
-import { requestChatOpen } from "@/lib/chat/chat-storage";
 import type { BookingDetail } from "@/lib/booking/booking-service";
 
 type View = "pay" | "paid" | "cancelled" | "invalid" | "success";
@@ -28,11 +27,6 @@ export function PaymentClient({
   const [view, setView] = useState<View>(initial);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function openChat() {
-    requestChatOpen();
-    window.location.href = "/";
-  }
 
   async function payNow() {
     if (!booking) return;
@@ -61,21 +55,19 @@ export function PaymentClient({
           <Brand hotelName={hotelName} />
 
           {view === "invalid" ? (
-            <InvalidCard onOpenChat={openChat} />
+            <InvalidCard />
           ) : view === "cancelled" && booking ? (
-            <CancelledCard booking={booking} onOpenChat={openChat} />
+            <CancelledCard booking={booking} />
           ) : view === "paid" && booking ? (
             <ConfirmedCard
               booking={booking}
               title="This booking has already been paid and confirmed."
-              onOpenChat={openChat}
             />
           ) : view === "success" && booking ? (
             <ConfirmedCard
               booking={booking}
               title="Payment confirmed."
               subtitle="Your booking confirmation and invoice were sent to your email."
-              onOpenChat={openChat}
             />
           ) : booking ? (
             <PayCard
@@ -83,7 +75,6 @@ export function PaymentClient({
               processing={processing}
               error={error}
               onPay={payNow}
-              onOpenChat={openChat}
             />
           ) : null}
 
@@ -152,13 +143,11 @@ function PayCard({
   processing,
   error,
   onPay,
-  onOpenChat,
 }: {
   booking: BookingDetail;
   processing: boolean;
   error: string | null;
   onPay: () => void;
-  onOpenChat: () => void;
 }) {
   return (
     <Card>
@@ -205,13 +194,6 @@ function PayCard({
       >
         {processing ? "Processing…" : `Pay securely ${formatCurrency(booking.totalPrice, booking.currency)}`}
       </button>
-      <button
-        type="button"
-        onClick={onOpenChat}
-        className={cn(buttonClasses("ghost", "md"), "mt-2 w-full")}
-      >
-        Back to chat
-      </button>
     </Card>
   );
 }
@@ -220,12 +202,10 @@ function ConfirmedCard({
   booking,
   title,
   subtitle,
-  onOpenChat,
 }: {
   booking: BookingDetail;
   title: string;
   subtitle?: string;
-  onOpenChat: () => void;
 }) {
   return (
     <Card>
@@ -261,21 +241,15 @@ function ConfirmedCard({
         <Link href="/" className={cn(buttonClasses("secondary", "md"), "flex-1")}>
           Back to hotel
         </Link>
-        <button type="button" onClick={onOpenChat} className={cn(buttonClasses("primary", "md"), "flex-1")}>
-          Open chat
-        </button>
+        <Link href="/account/bookings" className={cn(buttonClasses("primary", "md"), "flex-1")}>
+          View bookings
+        </Link>
       </div>
     </Card>
   );
 }
 
-function CancelledCard({
-  booking,
-  onOpenChat,
-}: {
-  booking: BookingDetail;
-  onOpenChat: () => void;
-}) {
+function CancelledCard({ booking }: { booking: BookingDetail }) {
   return (
     <Card>
       <div className="flex flex-col items-center text-center">
@@ -286,7 +260,7 @@ function CancelledCard({
           This booking has been cancelled.
         </h1>
         <p className="mt-1 text-sm text-stone-500">
-          Please contact the AI assistant for help rebooking.
+          Please contact the hotel team if you need help rebooking.
         </p>
       </div>
       <div className="mt-5">
@@ -296,15 +270,15 @@ function CancelledCard({
         <Link href="/" className={cn(buttonClasses("secondary", "md"), "flex-1")}>
           Return to hotel
         </Link>
-        <button type="button" onClick={onOpenChat} className={cn(buttonClasses("primary", "md"), "flex-1")}>
-          Open AI assistant
-        </button>
+        <Link href="/contact" className={cn(buttonClasses("primary", "md"), "flex-1")}>
+          Contact hotel
+        </Link>
       </div>
     </Card>
   );
 }
 
-function InvalidCard({ onOpenChat }: { onOpenChat: () => void }) {
+function InvalidCard() {
   return (
     <Card>
       <div className="flex flex-col items-center text-center">
@@ -322,9 +296,9 @@ function InvalidCard({ onOpenChat }: { onOpenChat: () => void }) {
         <Link href="/" className={cn(buttonClasses("secondary", "md"), "flex-1")}>
           Return to hotel
         </Link>
-        <button type="button" onClick={onOpenChat} className={cn(buttonClasses("primary", "md"), "flex-1")}>
-          Open AI assistant
-        </button>
+        <Link href="/contact" className={cn(buttonClasses("primary", "md"), "flex-1")}>
+          Contact hotel
+        </Link>
       </div>
     </Card>
   );

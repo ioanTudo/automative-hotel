@@ -119,6 +119,17 @@ export function formatDate(value: Date | string): string {
   }).format(d);
 }
 
+/** Short, guest-facing reference derived from the booking id. */
+export function bookingReference(id: string): string {
+  return id.slice(-8).toUpperCase();
+}
+
+export function invoiceNumber(): string {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `INV-${year}-${rand}`;
+}
+
 /** yyyy-MM-dd for <input type="date"> values. */
 export function toDateInputValue(value: Date | string): string {
   const d = toDate(value);

@@ -2,15 +2,9 @@
 // by the payment page and payment APIs so the logic lives in one place.
 
 import { prisma } from "@/lib/prisma";
-import { calculateNights } from "@/lib/booking-utils";
+import { bookingReference, calculateNights, invoiceNumber } from "@/lib/booking-utils";
 import { invoiceProvider } from "@/lib/invoices/invoice-provider";
 import { emailService } from "@/lib/email/email-service";
-import {
-  bookingReference,
-  invoiceNumber,
-  toBookingSummaryCard,
-} from "@/lib/ai/tools/_shared";
-import type { BookingSummaryCard } from "@/lib/ai/types";
 
 const DEFAULT_CANCELLATION =
   "Free cancellation up to 48 hours before check-in.";
@@ -66,7 +60,7 @@ export async function getBookingDetail(
 }
 
 export type ConfirmPaymentResult =
-  | { ok: true; alreadyPaid: boolean; card: BookingSummaryCard; invoiceUrl: string | null }
+  | { ok: true; alreadyPaid: boolean; invoiceUrl: string | null }
   | { ok: false; reason: "not_found" | "cancelled" };
 
 /**
@@ -88,7 +82,6 @@ export async function confirmBookingPayment(
     return {
       ok: true,
       alreadyPaid: true,
-      card: toBookingSummaryCard(booking, booking.room.name, "Already paid."),
       invoiceUrl: booking.invoiceUrl,
     };
   }
@@ -167,7 +160,6 @@ export async function confirmBookingPayment(
   return {
     ok: true,
     alreadyPaid: false,
-    card: toBookingSummaryCard(updated, updated.room.name, "Payment received — booking confirmed."),
     invoiceUrl: invoice.url,
   };
 }

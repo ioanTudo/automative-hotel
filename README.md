@@ -12,7 +12,6 @@ A premium-but-realistic website and booking system for a **3-star hotel with a r
 - **Restaurant** (`/restaurant`) — about, opening hours, menu preview, offers and a table reservation form.
 - **Contact** (`/contact`) — details, opening hours, map placeholder and a contact form.
 - **Admin dashboard** (`/admin`) — admin-only: manage bookings (update status), full room CRUD, view users and restaurant reservations.
-- **AI assistant bubble** — floating bottom-right chat on every page with mocked, keyword-based replies (modular, ready to wire to a real API).
 
 ## Tech stack
 
@@ -38,7 +37,7 @@ src/
     admin/                 # admin dashboard
     ...
   components/
-    layout/  hotel/  booking/  restaurant/  contact/  account/  admin/  ai/  ui/
+    layout/  hotel/  booking/  restaurant/  contact/  account/  admin/  ui/
   lib/
     prisma.ts              # Prisma client singleton (better-sqlite3 adapter)
     auth.ts                # password hashing + session cookie helpers
@@ -135,7 +134,6 @@ Mutations (register, login, logout, create/cancel booking, admin actions, reserv
 The MVP is intentionally structured so you can add, without rework:
 
 - **Payments** — booking total is already computed; add a checkout step in the booking action.
-- **Real AI** — replace `getMockReply` in `src/lib/ai-mock.ts` with a call to your AI endpoint; the chat UI is unchanged.
 - **Email notifications** — hook into the booking / reservation / contact server actions.
 - **Production database** — swap the SQLite datasource + driver adapter (e.g. Postgres) in `schema.prisma` and `src/lib/prisma.ts`.
 - **Auth.js** — the small `lib/auth.ts` surface can be replaced with Auth.js without touching call sites.

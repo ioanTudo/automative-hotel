@@ -4,7 +4,7 @@ import { processMockPayment } from "@/lib/payment/mock-payment-service";
 
 // POST /api/payment/mock-confirm  { bookingId }
 // Simulates a successful payment: confirms the booking, generates the invoice,
-// sends the (mock) emails, and records a confirmation on the linked chat.
+// and sends the (mock) emails.
 
 const schema = z.object({ bookingId: z.string().min(1) });
 
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     alreadyPaid: result.alreadyPaid,
-    card: result.card,
     invoiceUrl: result.invoiceUrl,
   });
 }
